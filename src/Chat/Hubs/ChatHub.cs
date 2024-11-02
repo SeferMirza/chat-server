@@ -1,4 +1,3 @@
-using Chat.DTOs;
 using Chat.Models;
 using Chat.Services;
 using Microsoft.AspNetCore.SignalR;
@@ -7,37 +6,44 @@ namespace Chat.Hubs;
 
 public sealed class ChatHub(IChatService _chatService) : Hub
 {
-    public async Task<string> JoinRoom(Guid serverId, Guid roomId)
+    public async Task<string> JoinServer(string name, Guid serverId)
     {
         var userId = Context.ConnectionId;
-        var joinRoomDto = new JoinRoomDto { ServerId = serverId, RoomId = roomId };
 
-        await _chatService.JoinRoomAsync(userId, joinRoomDto);
-        await Groups.AddToGroupAsync(Context.ConnectionId, roomId.ToString());
+        _chatService.JoinServer(userId, name, serverId);
+        await Groups.AddToGroupAsync(Context.ConnectionId, serverId.ToString());
 
         return userId;
     }
 
-    public async Task LeaveRoom(Guid roomId)
+    public async Task LeaveServer(Guid serverId)
     {
         var userId = Context.ConnectionId;
-        await _chatService.LeaveRoomAsync(userId, roomId);
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId.ToString());
+        _chatService.LeaveServer(userId, serverId);
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, serverId.ToString());
     }
 
-    public async Task SendMessage(Guid roomId, string message)
+    public async Task SendMessage(Guid serverId, string message)
     {
-        var userId = Context.ConnectionId;
+        var server = _chatService.GetServer(serverId);
+        var user = server.ConnectedUsers
+            .Find(user => user.ConnectionId == Context.ConnectionId) ?? throw new Exception("User not joined this server");
 
         var messageObj = new Message
         {
             Id = Guid.NewGuid(),
             Content = message,
-            SenderId = userId,
-            RoomId = roomId,
+            Sender = user.Name,
+            Server = server.ServerId,
             SentAt = DateTime.UtcNow
         };
 
-        await Clients.Group(roomId.ToString()).SendAsync("ReceiveMessage", messageObj);
+        await Clients.Group(server.ServerId.ToString()).SendAsync("ReceiveMessage", messageObj);
+    }
+
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        _chatService.Disconnect(Context.ConnectionId);
+        return base.OnDisconnectedAsync(exception);
     }
 }

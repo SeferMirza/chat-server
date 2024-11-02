@@ -1,7 +1,7 @@
 namespace Chat.Models;
 
-public record Server(Guid ServerId, string OwnerId, string ServerName)
+public record Server(Guid ServerId, string ServerName)
 {
     public int Capacity { get; set; } = 10;
-    public List<Room> Rooms { get; set; } = [];
+    public List<User> ConnectedUsers { get; set; } = [];
 }

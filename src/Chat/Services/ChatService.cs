@@ -1,4 +1,3 @@
-using Chat.DTOs;
 using Chat.Models;
 
 namespace Chat.Services;
@@ -7,12 +6,11 @@ public class ChatService : IChatService
 {
     private readonly Dictionary<Guid, Server> _servers = [];
 
-    public async Task<Server> CreateServerAsync(string creatorId, CreateServerDto dto)
+    public Server CreateServer(string name)
     {
         var server = new Server(
             Guid.NewGuid(),
-            creatorId,
-            dto.Name
+            name
         );
 
         _servers[server.ServerId] = server;
@@ -20,48 +18,45 @@ public class ChatService : IChatService
         return server;
     }
 
-    public async Task<Room> CreateRoomAsync(Guid serverId, CreateRoomDto dto)
+    public void Disconnect(string connectionId)
     {
-        if (!_servers.ContainsKey(serverId))
-            throw new Exception("Server not found");
-
-        var room = new Room(
-            Guid.NewGuid(),
-            dto.Name,
-            [],
-            dto.Type
-        );
-
-        _servers[serverId].Rooms.Add(room);
-
-        return room;
+        var server = _servers.FirstOrDefault(s => s.Value.ConnectedUsers.Any(u => u.ConnectionId == connectionId)).Value;
+        if (server != null)
+        {
+            var user = server.ConnectedUsers.First(u => u.ConnectionId == connectionId);
+            server.ConnectedUsers.Remove(user);
+        }
     }
 
-    public async Task<Room> JoinRoomAsync(string userId, JoinRoomDto dto)
+    public Server GetServer(Guid serverId)
     {
-        if (!_servers.ContainsKey(dto.ServerId))
-            throw new Exception("Server not found");
-
-        var room = _servers[dto.ServerId].Rooms.FirstOrDefault(r => r.RoomId == dto.RoomId);
-        if (room == null)
-            throw new Exception("Room not found");
-
-        if (!room.ConnectedUsers.Contains(userId))
-            room.ConnectedUsers.Add(userId);
-
-        return room;
+        return _servers[serverId];
     }
 
-    public async Task<bool> LeaveRoomAsync(string userId, Guid roomId)
+    public Server JoinServer(string connectionId, string userName, Guid serverId)
     {
-        var server = _servers.Values.FirstOrDefault(s => s.Rooms.Any(r => r.RoomId == roomId));
-        if (server == null)
-            return false;
+        if (!_servers.TryGetValue(serverId, out Server? server))
+            throw new Exception("Server not found");
 
-        var room = server.Rooms.FirstOrDefault(r => r.RoomId == roomId);
-        if (room == null)
-            return false;
+        if(!server.ConnectedUsers.Any(u => u.ConnectionId == connectionId))
+        {
+            if(server.ConnectedUsers.Any(u => u.Name == userName))
+            {
+                throw new Exception("This username already using in this server");
+            }
 
-        return room.ConnectedUsers.Remove(userId);
+            server.ConnectedUsers.Add(new(connectionId, userName));
+        }
+
+        return server;
+    }
+
+    public bool LeaveServer(string connectionId, Guid serverId)
+    {
+        var server = _servers[serverId] ?? throw new ServerNotFound();
+        var user = server.ConnectedUsers
+            .First(u => u.ConnectionId == connectionId) ?? throw new Exception("User not found");
+
+        return server.ConnectedUsers.Remove(user);
     }
 }
