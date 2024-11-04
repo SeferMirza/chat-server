@@ -33,6 +33,11 @@ public class ChatService : IChatService
         return _servers[serverId];
     }
 
+    public List<ServerInfo> GetServers()
+    {
+        return _servers.Select(s => new ServerInfo(s.Key, s.Value.ServerName)).ToList();
+    }
+
     public Server JoinServer(string connectionId, string userName, Guid serverId)
     {
         if (!_servers.TryGetValue(serverId, out Server? server))
