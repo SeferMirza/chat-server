@@ -6,14 +6,16 @@ namespace Chat.Hubs;
 
 public sealed class ChatHub(IChatService _chatService) : Hub
 {
-    public async Task<string> JoinServer(string name, Guid serverId)
+    public async Task<List<Message>> JoinServer(string name, Guid serverId)
     {
         var userId = Context.ConnectionId;
 
-        _chatService.JoinServer(userId, name, serverId);
+        var server = _chatService.JoinServer(userId, name, serverId);
         await Groups.AddToGroupAsync(Context.ConnectionId, serverId.ToString());
+        var currentDate = DateTime.UtcNow;
+        server.Messages.RemoveAll(message => message.SentAt < currentDate.AddMonths(-1));
 
-        return userId;
+        return await Task.FromResult(server.Messages);
     }
 
     public async Task LeaveServer(Guid serverId)
@@ -39,6 +41,8 @@ public sealed class ChatHub(IChatService _chatService) : Hub
         };
 
         await Clients.Group(server.ServerId.ToString()).SendAsync("ReceiveMessage", messageObj);
+
+        server.Messages.Add(messageObj);
     }
 
     public override Task OnDisconnectedAsync(Exception? exception)
