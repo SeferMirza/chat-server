@@ -9,17 +9,38 @@ namespace Chat.Controllers;
 public partial class ChatController(IChatService _chatService) : ControllerBase
 {
     [HttpPost("create-server")]
-    public ActionResult<Server> CreateServer([FromQuery] string name)
+    public ActionResult<ServerInfo> CreateServer([FromQuery] string name)
     {
         var server = _chatService.CreateServer(name);
+        ServerDetail result = new(
+            server.ServerId,
+            server.ServerName,
+            server.Capacity,
+            []
+        );
 
-        return Ok(server);
+        return Ok(result);
     }
+
     [HttpGet("servers")]
     public ActionResult<List<ServerInfo>> GetServers()
     {
-        var server = _chatService.GetServers();
+        var servers = _chatService.GetServers();
 
-        return Ok(server);
+        return Ok(servers);
+    }
+
+    [HttpGet("server-detail")]
+    public ActionResult<List<ServerDetail>> GetServerDetail([FromQuery] Guid id)
+    {
+        var server = _chatService.GetServer(id);
+        ServerDetail result = new(
+            server.ServerId,
+            server.ServerName,
+            server.Capacity,
+            server.ConnectedUsers.Select(user => user.Name).ToList()
+        );
+
+        return Ok(result);
     }
 }
