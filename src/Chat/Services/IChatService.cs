@@ -10,4 +10,5 @@ public interface IChatService
     bool LeaveServer(string userId, Guid serverId);
     void Disconnect(string userId);
     List<ServerInfo> GetServers();
+    bool CheckUsername(Guid serverId, string username);
 }

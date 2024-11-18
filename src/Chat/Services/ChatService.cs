@@ -6,6 +6,11 @@ public class ChatService : IChatService
 {
     private readonly Dictionary<Guid, Server> _servers = [];
 
+    public bool CheckUsername(Guid serverId, string username)
+    {
+        return !_servers[serverId].ConnectedUsers.Any(x => x.Name == username);
+    }
+
     public Server CreateServer(string name)
     {
         var server = new Server(

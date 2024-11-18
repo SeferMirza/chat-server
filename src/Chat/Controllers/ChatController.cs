@@ -30,6 +30,14 @@ public partial class ChatController(IChatService _chatService) : ControllerBase
         return Ok(servers);
     }
 
+    [HttpGet("username-is-valid")]
+    public ActionResult<bool> CheckUsername([FromQuery] Guid serverId, [FromQuery] string username)
+    {
+        var response = _chatService.CheckUsername(serverId, username);
+
+        return Ok(response);
+    }
+
     [HttpGet("server-detail")]
     public ActionResult<List<ServerDetail>> GetServerDetail([FromQuery] Guid id)
     {
