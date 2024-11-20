@@ -1,3 +1,4 @@
+using Chat.Exceptions;
 using Chat.Models;
 using Chat.Services;
 using Microsoft.AspNetCore.SignalR;
@@ -29,7 +30,7 @@ public sealed class ChatHub(IChatService _chatService) : Hub
     {
         var server = _chatService.GetServer(serverId);
         var user = server.ConnectedUsers
-            .Find(user => user.ConnectionId == Context.ConnectionId) ?? throw new Exception("User not joined this server");
+            .Find(user => user.ConnectionId == Context.ConnectionId) ?? throw new UserDidNotJoinThisServerException();
 
         var messageObj = new Message
         {
@@ -48,6 +49,7 @@ public sealed class ChatHub(IChatService _chatService) : Hub
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         _chatService.Disconnect(Context.ConnectionId);
+
         return base.OnDisconnectedAsync(exception);
     }
 }

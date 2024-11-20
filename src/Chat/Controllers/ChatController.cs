@@ -9,7 +9,7 @@ namespace Chat.Controllers;
 public partial class ChatController(IChatService _chatService) : ControllerBase
 {
     [HttpPost("create-server")]
-    public ActionResult<ServerInfo> CreateServer([FromQuery] string name)
+    public APIResponse<ServerDetail> CreateServer([FromQuery] string name)
     {
         var server = _chatService.CreateServer(name);
         ServerDetail result = new(
@@ -19,29 +19,30 @@ public partial class ChatController(IChatService _chatService) : ControllerBase
             []
         );
 
-        return Ok(result);
+        return APIResponse<ServerDetail>.SuccessResponse(data: result);
     }
 
     [HttpGet("servers")]
-    public ActionResult<List<ServerInfo>> GetServers()
+    public APIResponse<List<ServerInfo>> GetServers()
     {
         var servers = _chatService.GetServers();
 
-        return Ok(servers);
+        return APIResponse<List<ServerInfo>>.SuccessResponse(data: servers);
     }
 
     [HttpGet("username-is-valid")]
-    public ActionResult<bool> CheckUsername([FromQuery] Guid serverId, [FromQuery] string username)
+    public APIResponse<bool> CheckUsername([FromQuery] Guid serverId, [FromQuery] string username)
     {
         var response = _chatService.CheckUsername(serverId, username);
 
-        return Ok(response);
+        return APIResponse<bool>.SuccessResponse(data: response);
     }
 
     [HttpGet("server-detail")]
-    public ActionResult<List<ServerDetail>> GetServerDetail([FromQuery] Guid id)
+    public APIResponse<ServerDetail> GetServerDetail([FromQuery] Guid id)
     {
         var server = _chatService.GetServer(id);
+
         ServerDetail result = new(
             server.ServerId,
             server.ServerName,
@@ -49,6 +50,6 @@ public partial class ChatController(IChatService _chatService) : ControllerBase
             server.ConnectedUsers.Select(user => user.Name).ToList()
         );
 
-        return Ok(result);
+        return APIResponse<ServerDetail>.SuccessResponse(data: result);
     }
 }

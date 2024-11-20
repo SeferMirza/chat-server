@@ -1,3 +1,4 @@
+using Chat.Exceptions;
 using Chat.Hubs;
 using Chat.Services;
 
@@ -7,6 +8,9 @@ builder.Services.AddControllers();
 
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<IChatService, ChatService>();
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddCors(options =>
 {
@@ -24,7 +28,7 @@ var app = builder.Build();
 app.UseCors("ChatPolicy");
 app.UseRouting();
 app.UseAuthorization();
-
+app.UseExceptionHandler();
 app.MapControllers();
 app.MapHub<ChatHub>("/chatHub");
 

@@ -1,3 +1,4 @@
+using Chat.Exceptions;
 using Chat.Models;
 
 namespace Chat.Services;
@@ -8,7 +9,12 @@ public class ChatService : IChatService
 
     public bool CheckUsername(Guid serverId, string username)
     {
-        return !_servers[serverId].ConnectedUsers.Any(x => x.Name == username);
+        if(!_servers.TryGetValue(serverId, out Server? server))
+        {
+            throw new ServerNotFoundException(serverId);
+        }
+
+        return !server.ConnectedUsers.Any(x => x.Name == username);
     }
 
     public Server CreateServer(string name)
@@ -35,7 +41,12 @@ public class ChatService : IChatService
 
     public Server GetServer(Guid serverId)
     {
-        return _servers[serverId];
+        if(!_servers.TryGetValue(serverId, out Server? server))
+        {
+            throw new ServerNotFoundException(serverId);
+        }
+
+        return server;
     }
 
     public List<ServerInfo> GetServers()
@@ -45,14 +56,13 @@ public class ChatService : IChatService
 
     public Server JoinServer(string connectionId, string userName, Guid serverId)
     {
-        if (!_servers.TryGetValue(serverId, out Server? server))
-            throw new Exception("Server not found");
+        var server = GetServer(serverId);
 
         if(!server.ConnectedUsers.Any(u => u.ConnectionId == connectionId))
         {
             if(server.ConnectedUsers.Any(u => u.Name == userName))
             {
-                throw new Exception("This username already using in this server");
+                throw new UsernameAlreadyInUseException(userName);
             }
 
             server.ConnectedUsers.Add(new(connectionId, userName));
@@ -63,9 +73,9 @@ public class ChatService : IChatService
 
     public bool LeaveServer(string connectionId, Guid serverId)
     {
-        var server = _servers[serverId] ?? throw new ServerNotFound();
+        var server = GetServer(serverId);
         var user = server.ConnectedUsers
-            .First(u => u.ConnectionId == connectionId) ?? throw new Exception("User not found");
+            .First(u => u.ConnectionId == connectionId) ?? throw new UserNotFoundException();
 
         return server.ConnectedUsers.Remove(user);
     }
