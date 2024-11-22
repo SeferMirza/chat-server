@@ -29,14 +29,18 @@ public class ChatService : IChatService
         return server;
     }
 
-    public void Disconnect(string connectionId)
+    public (User user, Server server) Disconnect(string connectionId)
     {
         var server = _servers.FirstOrDefault(s => s.Value.ConnectedUsers.Any(u => u.ConnectionId == connectionId)).Value;
-        if (server != null)
+        if (server == null)
         {
-            var user = server.ConnectedUsers.First(u => u.ConnectionId == connectionId);
-            server.ConnectedUsers.Remove(user);
+            throw new ServerNotFoundException(server!.ServerId);
         }
+
+        var user = server.ConnectedUsers.First(u => u.ConnectionId == connectionId);
+        server.ConnectedUsers.Remove(user);
+
+        return (user, server);
     }
 
     public Server GetServer(Guid serverId)

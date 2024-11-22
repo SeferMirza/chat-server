@@ -16,13 +16,27 @@ public sealed class ChatHub(IChatService _chatService) : Hub
         var currentDate = DateTime.UtcNow;
         server.Messages.RemoveAll(message => message.SentAt < currentDate.AddMonths(-1));
 
+        var messageObj = new Message
+        {
+            Id = Guid.NewGuid(),
+            Content = $"'{name}' has joined the server.",
+            Sender = "Server",
+            Server = server.ServerId,
+            SentAt = DateTime.UtcNow
+        };
+
+        await Clients.Group(server.ServerId.ToString()).SendAsync("ReceiveMessage", messageObj);
+
         return await Task.FromResult(server.Messages);
     }
 
     public async Task LeaveServer(Guid serverId)
     {
-        var userId = Context.ConnectionId;
-        _chatService.LeaveServer(userId, serverId);
+        var server = _chatService.GetServer(serverId);
+        var user = server.ConnectedUsers
+            .Find(user => user.ConnectionId == Context.ConnectionId)  ?? throw new UserDidNotJoinThisServerException();
+
+        _chatService.LeaveServer(user.ConnectionId, serverId);
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, serverId.ToString());
     }
 
@@ -46,10 +60,20 @@ public sealed class ChatHub(IChatService _chatService) : Hub
         server.Messages.Add(messageObj);
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        _chatService.Disconnect(Context.ConnectionId);
+        (User user, Server server) = _chatService.Disconnect(Context.ConnectionId);
 
-        return base.OnDisconnectedAsync(exception);
+        var messageObj = new Message
+        {
+            Id = Guid.NewGuid(),
+            Content = $"'{user.Name}' has left the server.",
+            Sender = "Server",
+            Server = server.ServerId,
+            SentAt = DateTime.UtcNow
+        };
+
+        await Clients.Group(server.ServerId.ToString()).SendAsync("ReceiveMessage", messageObj);
+        await base.OnDisconnectedAsync(exception);
     }
 }

@@ -8,7 +8,7 @@ public interface IChatService
     Server CreateServer(string name);
     Server JoinServer(string userId, string userName, Guid serverId);
     bool LeaveServer(string userId, Guid serverId);
-    void Disconnect(string userId);
+    (User user, Server server) Disconnect(string userId);
     List<ServerInfo> GetServers();
     bool CheckUsername(Guid serverId, string username);
 }
