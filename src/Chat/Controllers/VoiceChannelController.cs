@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace Chat.Controllers;
 
 [ApiController]
-[Route("[controller]")]
-public partial class ChatController(IChatService _chatService) : ControllerBase
+[Route("voice")]
+public partial class VoiceChannelController([FromKeyedServices(nameof(VoiceChannelService))] IService _chatService) : ControllerBase
 {
     [HttpPost("create-server")]
     public APIResponse<ServerDetail> CreateServer([FromQuery] string name)

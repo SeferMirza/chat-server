@@ -3,11 +3,11 @@ using Chat.Models;
 
 namespace Chat.Services;
 
-public class ChatService : IChatService
+public abstract class ChannelService : IService
 {
     private readonly Dictionary<Guid, Server> _servers = [];
 
-    public bool CheckUsername(Guid serverId, string username)
+    public virtual bool CheckUsername(Guid serverId, string username)
     {
         if(!_servers.TryGetValue(serverId, out Server? server))
         {
@@ -17,7 +17,7 @@ public class ChatService : IChatService
         return !server.ConnectedUsers.Any(x => x.Name == username);
     }
 
-    public Server CreateServer(string name)
+    public virtual Server CreateServer(string name)
     {
         var server = new Server(
             Guid.NewGuid(),
@@ -29,7 +29,7 @@ public class ChatService : IChatService
         return server;
     }
 
-    public (User user, Server server) Disconnect(string connectionId)
+    public virtual (User user, Server server) Disconnect(string connectionId)
     {
         var server = _servers.FirstOrDefault(s => s.Value.ConnectedUsers.Any(u => u.ConnectionId == connectionId)).Value;
         if (server == null)
@@ -43,7 +43,7 @@ public class ChatService : IChatService
         return (user, server);
     }
 
-    public Server GetServer(Guid serverId)
+    public virtual Server GetServer(Guid serverId)
     {
         if(!_servers.TryGetValue(serverId, out Server? server))
         {
@@ -53,12 +53,12 @@ public class ChatService : IChatService
         return server;
     }
 
-    public List<ServerInfo> GetServers()
+    public virtual List<ServerInfo> GetServers()
     {
         return _servers.Select(s => new ServerInfo(s.Key, s.Value.ServerName)).ToList();
     }
 
-    public Server JoinServer(string connectionId, string userName, Guid serverId)
+    public virtual Server JoinServer(string connectionId, string userName, Guid serverId)
     {
         var server = GetServer(serverId);
 
@@ -75,7 +75,7 @@ public class ChatService : IChatService
         return server;
     }
 
-    public bool LeaveServer(string connectionId, Guid serverId)
+    public virtual bool LeaveServer(string connectionId, Guid serverId)
     {
         var server = GetServer(serverId);
         var user = server.ConnectedUsers

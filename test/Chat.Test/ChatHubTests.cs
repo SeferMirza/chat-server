@@ -8,19 +8,19 @@ namespace Chat.Test;
 
 public class ChatHubTests
 {
-    private Mock<IChatService> _chatServiceMock;
-    private ChatHub _chatHub;
+    private Mock<IService> _chatServiceMock;
+    private ChatChannelHub _chatHub;
     private Mock<IHubCallerClients> _clientsMock;
     private Mock<IGroupManager> _groupsMock;
 
     [SetUp]
     public void SetUp()
     {
-        _chatServiceMock = new Mock<IChatService>();
+        _chatServiceMock = new Mock<IService>();
         _clientsMock = new Mock<IHubCallerClients>();
         _groupsMock = new Mock<IGroupManager>();
 
-        _chatHub = new ChatHub(_chatServiceMock.Object)
+        _chatHub = new ChatChannelHub(_chatServiceMock.Object)
         {
             Clients = _clientsMock.Object,
             Groups = _groupsMock.Object,

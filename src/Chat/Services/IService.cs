@@ -2,7 +2,7 @@ using Chat.Models;
 
 namespace Chat.Services;
 
-public interface IChatService
+public interface IService
 {
     Server GetServer(Guid serverId);
     Server CreateServer(string name);

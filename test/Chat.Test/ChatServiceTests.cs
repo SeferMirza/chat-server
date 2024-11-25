@@ -5,12 +5,12 @@ namespace Chat.Test;
 
 public class ChatServiceTests
 {
-    ChatService _chatService;
+    ChatChannelService _chatService;
 
     [SetUp]
     public void SetUp()
     {
-        _chatService = new ChatService();
+        _chatService = new ChatChannelService();
     }
 
     [Test]

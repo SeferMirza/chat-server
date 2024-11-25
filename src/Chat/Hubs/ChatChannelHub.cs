@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Chat.Hubs;
 
-public sealed class ChatHub(IChatService _chatService) : Hub
+public sealed class ChatChannelHub([FromKeyedServices(nameof(ChatChannelService))] IService _chatService) : Hub
 {
     public async Task<List<Message>> JoinServer(string name, Guid serverId)
     {
