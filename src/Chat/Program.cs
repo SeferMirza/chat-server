@@ -1,14 +1,12 @@
+using Chat;
 using Chat.Exceptions;
-using Chat.Hubs;
-using Chat.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
 builder.Services.AddSignalR();
-builder.Services.AddKeyedSingleton<IService, ChatChannelService>(nameof(ChatChannelService));
-builder.Services.AddKeyedSingleton<IService, VoiceChannelService>(nameof(VoiceChannelService));
+builder.Services.AddOurServices();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -31,7 +29,6 @@ app.UseRouting();
 app.UseAuthorization();
 app.UseExceptionHandler();
 app.MapControllers();
-app.MapHub<ChatChannelHub>("/chatHub");
-app.MapHub<VoiceChannelHub>("/voiceHub");
+app.UseHubs();
 
 app.Run();
