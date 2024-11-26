@@ -7,7 +7,7 @@ namespace Chat.Hubs;
 
 public sealed class VoiceChannelHub([FromKeyedServices(nameof(VoiceChannelService))] IService _service) : Hub
 {
-    public async Task JoinServer(string name, Guid serverId)
+    public async Task Connect(string name, Guid serverId)
     {
         var userId = Context.ConnectionId;
         _service.JoinServer(userId, name, serverId);
