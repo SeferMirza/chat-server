@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Chat.Hubs;
 
-public sealed class ChatChannelHub([FromKeyedServices(nameof(ChatChannelService))] IService _chatService) : Hub
+public sealed class ChatChannelHub(IService _service) : Hub
 {
     public async Task<List<Message>> JoinServer(string name, Guid serverId)
     {
         var userId = Context.ConnectionId;
 
-        var server = _chatService.JoinServer(userId, name, serverId);
+        var server = _service.JoinServer(userId, name, serverId);
         await Groups.AddToGroupAsync(Context.ConnectionId, serverId.ToString());
         var currentDate = DateTime.UtcNow;
         server.Messages.RemoveAll(message => message.SentAt < currentDate.AddMonths(-1));
@@ -32,17 +32,17 @@ public sealed class ChatChannelHub([FromKeyedServices(nameof(ChatChannelService)
 
     public async Task LeaveServer(Guid serverId)
     {
-        var server = _chatService.GetServer(serverId);
+        var server = _service.GetServer(serverId);
         var user = server.ConnectedUsers
             .Find(user => user.ConnectionId == Context.ConnectionId)  ?? throw new UserDidNotJoinThisServerException();
 
-        _chatService.LeaveServer(user.ConnectionId, serverId);
+        _service.LeaveServer(user.ConnectionId, serverId);
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, serverId.ToString());
     }
 
     public async Task SendMessage(Guid serverId, string message)
     {
-        var server = _chatService.GetServer(serverId);
+        var server = _service.GetServer(serverId);
         var user = server.ConnectedUsers
             .Find(user => user.ConnectionId == Context.ConnectionId) ?? throw new UserDidNotJoinThisServerException();
 
@@ -62,7 +62,7 @@ public sealed class ChatChannelHub([FromKeyedServices(nameof(ChatChannelService)
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        (User user, Server server) = _chatService.Disconnect(Context.ConnectionId);
+        (User user, ServerFullInfo server) = _service.Disconnect(Context.ConnectionId);
 
         var messageObj = new Message
         {

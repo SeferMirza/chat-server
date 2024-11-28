@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Chat.Hubs;
 
-public sealed class VoiceChannelHub([FromKeyedServices(nameof(VoiceChannelService))] IService _service) : Hub
+public sealed class VoiceChannelHub(IService _service) : Hub
 {
     public async Task Connect(string name, Guid serverId)
     {
@@ -35,7 +35,7 @@ public sealed class VoiceChannelHub([FromKeyedServices(nameof(VoiceChannelServic
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        (User _, Server server) = _service.Disconnect(Context.ConnectionId);
+        (User _, ServerFullInfo server) = _service.Disconnect(Context.ConnectionId);
 
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, server.ServerId.ToString());
 

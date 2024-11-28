@@ -3,33 +3,26 @@ using Chat.Models;
 
 namespace Chat.Services;
 
-public abstract class ChannelService : IService
+public class ServerService : IService
 {
-    private readonly Dictionary<Guid, Server> _servers = [];
+    private readonly Dictionary<Guid, ServerFullInfo> _servers = [];
 
-    public virtual bool CheckUsername(Guid serverId, string username)
+    public virtual ServerFullInfo CreateServer(string name, ServerType serverType, bool isPublic = true)
     {
-        if(!_servers.TryGetValue(serverId, out Server? server))
+        var server = new ServerFullInfo()
         {
-            throw new ServerNotFoundException(serverId);
-        }
-
-        return !server.ConnectedUsers.Any(x => x.Name == username);
-    }
-
-    public virtual Server CreateServer(string name)
-    {
-        var server = new Server(
-            Guid.NewGuid(),
-            name
-        );
+            ServerId = Guid.NewGuid(),
+            ServerName = name,
+            ServerType = serverType,
+            Public = isPublic
+        };
 
         _servers[server.ServerId] = server;
 
         return server;
     }
 
-    public virtual (User user, Server server) Disconnect(string connectionId)
+    public virtual (User user, ServerFullInfo server) Disconnect(string connectionId)
     {
         var server = _servers.FirstOrDefault(s => s.Value.ConnectedUsers.Any(u => u.ConnectionId == connectionId)).Value;
         if (server == null)
@@ -43,9 +36,9 @@ public abstract class ChannelService : IService
         return (user, server);
     }
 
-    public virtual Server GetServer(Guid serverId)
+    public virtual ServerFullInfo GetServer(Guid serverId)
     {
-        if(!_servers.TryGetValue(serverId, out Server? server))
+        if(!_servers.TryGetValue(serverId, out ServerFullInfo? server))
         {
             throw new ServerNotFoundException(serverId);
         }
@@ -53,12 +46,21 @@ public abstract class ChannelService : IService
         return server;
     }
 
-    public virtual List<ServerInfo> GetServers()
+    public virtual List<ServerCoreInfo> GetServers()
     {
-        return _servers.Select(s => new ServerInfo(s.Key, s.Value.ServerName)).ToList();
+        return _servers.Select(s =>
+        {
+            return new ServerCoreInfo()
+            {
+                ServerId = s.Key,
+                ServerName = s.Value.ServerName,
+                ServerType = s.Value.ServerType,
+                Public = s.Value.Public
+            };
+        }).ToList();
     }
 
-    public virtual Server JoinServer(string connectionId, string userName, Guid serverId)
+    public virtual ServerFullInfo JoinServer(string connectionId, string userName, Guid serverId)
     {
         var server = GetServer(serverId);
 

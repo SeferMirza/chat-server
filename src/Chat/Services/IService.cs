@@ -4,11 +4,10 @@ namespace Chat.Services;
 
 public interface IService
 {
-    Server GetServer(Guid serverId);
-    Server CreateServer(string name);
-    Server JoinServer(string userId, string userName, Guid serverId);
+    ServerFullInfo GetServer(Guid serverId);
+    ServerFullInfo CreateServer(string name, ServerType serverType, bool isPublic);
+    ServerFullInfo JoinServer(string userId, string userName, Guid serverId);
     bool LeaveServer(string userId, Guid serverId);
-    (User user, Server server) Disconnect(string userId);
-    List<ServerInfo> GetServers();
-    bool CheckUsername(Guid serverId, string username);
+    (User user, ServerFullInfo server) Disconnect(string userId);
+    List<ServerCoreInfo> GetServers();
 }

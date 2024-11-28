@@ -39,7 +39,11 @@ public class ChatHubTests
     public async Task JoinServer_Should_Add_User_To_Server_And_Return_Messages()
     {
         var serverId = Guid.NewGuid();
-        var server = new Server(serverId, "Test Server");
+        var server = new ServerFullInfo()
+        {
+            ServerId = serverId,
+            ServerName = "Test Server"
+        };
         server.Messages.Add(new Message { Content = "Welcome!", SentAt = DateTime.UtcNow });
 
         _chatServiceMock
@@ -57,7 +61,11 @@ public class ChatHubTests
     public async Task SendMessage_Should_Broadcast_Message_To_Group()
     {
         var serverId = Guid.NewGuid();
-        var server = new Server(serverId, "Test Server");
+        var server = new ServerFullInfo()
+        {
+            ServerId = serverId,
+            ServerName = "Test Server"
+        };
         server.ConnectedUsers.Add(new("connection-1", "TestUser"));
 
         _chatServiceMock.Setup(s => s.GetServer(serverId)).Returns(server);
@@ -82,7 +90,11 @@ public class ChatHubTests
     {
         var serverId = Guid.NewGuid();
         var connectionId = "connection-1";
-        var server = new Server(serverId, "Test Server");
+        var server = new ServerFullInfo()
+        {
+            ServerId = serverId,
+            ServerName = "Test Server"
+        };
         server.ConnectedUsers.Add(new(connectionId, "TestUser"));
 
         _chatServiceMock.Setup(s => s.Disconnect(connectionId)).Callback(() =>
