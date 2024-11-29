@@ -6,7 +6,7 @@ WORKDIR /source
 
 ARG TARGETARCH
 
-RUN --mount=type=cache,id=nuget-${TARGETARCH},target=/root/.nuget/packages \
+RUN --mount=type=cache,id=s/railway-nuget-packages,target=/root/.nuget/packages \
     dotnet publish -a ${TARGETARCH/amd64/x64} --use-current-runtime --self-contained false -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS final
