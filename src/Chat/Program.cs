@@ -4,7 +4,7 @@ using Chat.Exceptions;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-
+builder.WebHost.UseKestrel();
 builder.Services.AddSignalR();
 builder.Services.AddOurServices();
 
