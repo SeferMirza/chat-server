@@ -3,5 +3,5 @@ builder = "dockerfile"
 dockerfilePath = "./src/Chat/Dockerfile"
 
 [deploy]
-startCommand = "./Chat"
+startCommand = "dotnet Chat.dll"
 restartPolicyType = "always"
