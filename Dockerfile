@@ -7,7 +7,7 @@ WORKDIR /source
 
 ARG TARGETARCH
 
-RUN --mount=type=cache,id=s/chat-server-nuget-packages,target=/root/.nuget/packages \
+RUN --mount=type=cache,id=s/$RAILWAY_SERVICE_ID-nuget-packages,target=/root/.nuget/packages \
     dotnet publish -a ${TARGETARCH/amd64/x64} --use-current-runtime --self-contained false -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS final
