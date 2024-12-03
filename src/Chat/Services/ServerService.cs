@@ -46,16 +46,18 @@ public class ServerService : IService
         return server;
     }
 
-    public virtual List<ServerCoreInfo> GetServers()
+    public virtual List<ServerDetailInfo> GetServers()
     {
         return _servers.Select(s =>
         {
-            return new ServerCoreInfo()
+            return new ServerDetailInfo()
             {
                 ServerId = s.Key,
                 ServerName = s.Value.ServerName,
                 ServerType = s.Value.ServerType,
-                Public = s.Value.Public
+                Public = s.Value.Public,
+                ConnectedUsers = s.Value.ConnectedUsers,
+                Capacity = s.Value.Capacity
             };
         }).ToList();
     }

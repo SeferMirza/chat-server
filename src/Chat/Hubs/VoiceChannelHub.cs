@@ -9,11 +9,11 @@ public sealed class VoiceChannelHub(IService _service) : Hub
 {
     public async Task Connect(string name, Guid serverId)
     {
-        var userId = Context.ConnectionId;
-        _service.JoinServer(userId, name, serverId);
+        _service.JoinServer(Context.ConnectionId, name, serverId);
+
         await Groups.AddToGroupAsync(Context.ConnectionId, serverId.ToString());
 
-        await Clients.Group(serverId.ToString()).SendAsync("UserJoined", Context.ConnectionId);
+        await Clients.Group(serverId.ToString()).SendAsync("UserJoined", new User(Context.ConnectionId, name));
     }
 
     public async Task LeaveServer(Guid serverId)
@@ -35,8 +35,9 @@ public sealed class VoiceChannelHub(IService _service) : Hub
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        (User _, ServerFullInfo server) = _service.Disconnect(Context.ConnectionId);
+        (User user, ServerFullInfo server) = _service.Disconnect(Context.ConnectionId);
 
+        await Clients.OthersInGroup(server.ServerId.ToString()).SendAsync("UserDisconnected", user);
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, server.ServerId.ToString());
 
         await base.OnDisconnectedAsync(exception);

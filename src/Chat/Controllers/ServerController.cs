@@ -25,11 +25,11 @@ public partial class ServerController(IService _chatService) : ControllerBase
     }
 
     [HttpGet("servers")]
-    public APIResponse<List<ServerCoreInfo>> GetServers()
+    public APIResponse<List<ServerDetailInfo>> GetServers()
     {
         var servers = _chatService.GetServers();
 
-        return APIResponse<List<ServerCoreInfo>>.SuccessResponse(data: servers);
+        return APIResponse<List<ServerDetailInfo>>.SuccessResponse(data: servers);
     }
 
     [HttpGet("server-detail")]

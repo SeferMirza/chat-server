@@ -9,5 +9,5 @@ public interface IService
     ServerFullInfo JoinServer(string userId, string userName, Guid serverId);
     bool LeaveServer(string userId, Guid serverId);
     (User user, ServerFullInfo server) Disconnect(string userId);
-    List<ServerCoreInfo> GetServers();
+    List<ServerDetailInfo> GetServers();
 }
